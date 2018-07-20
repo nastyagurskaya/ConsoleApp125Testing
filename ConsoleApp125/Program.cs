@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace ConsoleApp125
 {
@@ -24,57 +25,42 @@ namespace ConsoleApp125
         }
         public string ExecuteCommand(string command)
         {
-            bool started = _proc.Start(command);
-            if (started) return "Command excuted";
-            else return "Executing failed";
-            //var procStartInfo = new System.Diagnostics.ProcessStartInfo("cmd", "/c " + command)
-            //{
-            //    RedirectStandardOutput = true,
-            //    RedirectStandardError = true,
-            //    UseShellExecute = false,
-            //    CreateNoWindow = true
-            //};
-
-            //var proc = new System.Diagnostics.Process {StartInfo = procStartInfo};
-            //proc.Start();
-            //var result = proc.StandardOutput.ReadToEnd();
-            //var resultError = proc.StandardError.ReadToEnd();
-            //var error = proc.ExitCode;
-
-            //if (error != 0)
-            //{
-            //    throw new Exception(result + resultError);
-            //}
-
-            //return result + resultError;
-        }
-    }
-    public interface IProcessService
-    {
-        bool Start(string command);
-    }
-    public class ProcessService : IProcessService
-    {
-        public bool Start(string command)
-        {
-            var procStartInfo = new System.Diagnostics.ProcessStartInfo("cmd", "/c " + command)
+            var procStartInfo = new ProcessStartInfo("cmd", "/c " + command)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
-            var proc = new System.Diagnostics.Process { StartInfo = procStartInfo };
+
+            var proc = new Process {StartInfo = procStartInfo};
+            bool  started = _proc.Start(proc);
+            //proc.Start();
+            //var result = proc.StandardOutput.ReadToEnd();
+            //var resultError = proc.StandardError.ReadToEnd();
+            //var error = proc.ExitCode;
+
+            if (!started)
+            {
+                throw new Exception("Failed");
+            }
+
+            return "Executed";
+        }
+    }
+    public interface IProcessService
+    {
+        bool Start(Process proc);
+    }
+    public class ProcessService : IProcessService
+    {
+        public bool Start(Process proc)
+        {
             proc.Start();
             var result = proc.StandardOutput.ReadToEnd();
             var resultError = proc.StandardError.ReadToEnd();
-
-            var error = proc.ExitCode;
-
-            if (error != 0)
-            {
-                return false;
-            }
+            var er = proc.ExitCode;
+            if (er != 0) return false;
 
             return true;
         }
